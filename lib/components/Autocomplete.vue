@@ -98,7 +98,12 @@ export default {
   },
   watch: {
     localTypes: 'setTypes',
-    types: 'setTypes'
+    types: 'setTypes',
+    '$refs.map' (element) {
+      if (element !== undefined) {
+        this.googleMapsReady()
+      }
+    }
   },
   created () {
     const mapAncestor = this.$_findAncestor(
@@ -114,8 +119,13 @@ export default {
     this.$_map = mapComp ? await mapComp.$_getMap() : null
   },
   googleMapsReady () {
+    const element = this.$refs.input
+
+    if (!element || this.ready) {
+      return
+    }
     this.$_autocomplete = new window.google.maps.places.Autocomplete(
-      this.$refs.input,
+      element,
       this.$props.options
     )
     this.$_autocomplete.setTypes(this.$props.types)
@@ -137,6 +147,9 @@ export default {
         }
       }
     })
+
+    // Update "ready" flag
+    this.ready = true
   }
 }
 </script>

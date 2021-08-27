@@ -102,12 +102,21 @@ export default {
       required: false
     }
   },
-
+  data () {
+    return {
+      ready: false
+    }
+  },
   beforeCreate () {
     this.$_mapPromises = []
   },
   googleMapsReady () {
     const element = this.$refs.map
+
+    if (!element || this.ready) {
+      return
+    }
+
     // Fallback to global options when props are not defined
     const { options, ...propOpts } = this.$props
     const mapOptions = assignDefined(this.$googleMap, options, propOpts)
@@ -138,6 +147,9 @@ export default {
 
     // Code that awaits `$_getMap()`
     this.$_mapPromises.forEach(resolve => resolve(this.$_map))
+
+    // Update "ready" flag
+    this.ready = true
   },
 
   methods: {
@@ -210,6 +222,11 @@ export default {
   },
 
   watch: {
+    '$refs.map' (element) {
+      if (element !== undefined) {
+        this.googleMapsReady()
+      }
+    },
     options: {
       handler (val) {
         this.$_map.setOptions(val)
